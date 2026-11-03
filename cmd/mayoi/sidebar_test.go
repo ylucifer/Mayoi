@@ -43,7 +43,10 @@ func TestSidebarTitleFits(t *testing.T) {
 		hs.settle()
 	}
 	whole("SOURCE CONTROL")
-	a.window.SidebarWidth = 180
+	// The switches are the stripe's now, so the title has more room: it
+	// gives way to its short form in a sidebar narrower than the drag's
+	// least.
+	a.window.SidebarWidth = 120
 	hs.settle()
 	whole("GIT")
 }

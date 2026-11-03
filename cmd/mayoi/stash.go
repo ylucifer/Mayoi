@@ -193,7 +193,7 @@ func (a *app) stashPickerView(c *ui.Context) {
 	ui.Overlay(c, func() {
 		back := a.dialogBack(c)
 		back.Children(func() {
-			box := a.floating(c, ui.Column(c).Width(560).MaxWidthPercent(92).Margin(titleBarH+8, 0, 0, 0).Radius(10), true).Clip().Role(ui.RoleDialog).Label(locales.CmdGitStashes())
+			box := a.floating(c, ui.Column(c).Width(560).MaxWidthPercent(92).Margin(titleH()+8, 0, 0, 0).Radius(10), true).Clip().Role(ui.RoleDialog).Label(locales.CmdGitStashes())
 			box.Children(func() {
 				ui.Row(c).Padding(10, 14).BorderWidth(0, 0, 1, 0).BorderColor(p.border).Children(func() {
 					in := a.textKeys(ui.TextInputBase(c.Key("stash-input"), &pick.query)).Grow(1).FontSize(14).AutoFocus().Placeholder(locales.StashFind()).Label(locales.CmdGitStashes())

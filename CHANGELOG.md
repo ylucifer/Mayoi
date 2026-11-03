@@ -5,6 +5,11 @@ needs a `## <version>` section here, or its build fails.
 
 ## Unreleased
 
+- The window is laid out as IDEA's new UI is: a main toolbar, a tool window stripe at each side and a 30-point status bar.
+- The main toolbar holds the menu, the project and its branch at the left, a search box at the middle and commands, settings and theme at the right.
+- The explorer, the search and the source control open from the left stripe's and the right stripe's buttons; the source control docks at the right, as IDEA's Git window does.
+- The terminal's entry sits at the foot of the stripe of the side it docks at, past a divider, as IDEA's bottom tool windows do.
+- The sidebar's header is a tool window's title, and its view switches are the stripe's buttons.
 - AI commit messages no longer send the contents of new secret files like `.env` or keys, only their names.
 - With the `"hc"` backend, `terminalBackendHcPath` finds hc before `PATH` and `~/.local/bin`.
 - With the `"hc"` backend, `terminalBackendHcEnv` passes `KEY=value` variables to hc's commands.

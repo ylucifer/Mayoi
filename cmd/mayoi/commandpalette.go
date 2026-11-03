@@ -244,7 +244,7 @@ func (a *app) quickCommands(c *ui.Context, query string) {
 	ui.Overlay(c, func() {
 		back := a.dialogBack(c)
 		back.Children(func() {
-			box := a.floating(c, ui.Column(c).Width(600).MaxWidthPercent(92).Margin(titleBarH+8, 0, 0, 0).Radius(10), true).Clip()
+			box := a.floating(c, ui.Column(c).Width(600).MaxWidthPercent(92).Margin(titleH()+8, 0, 0, 0).Radius(10), true).Clip()
 			shake(c, box, q.shook)
 			box.
 				Role(ui.RoleDialog).Label(locales.PaletteLabel())

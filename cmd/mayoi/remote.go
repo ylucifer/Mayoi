@@ -562,7 +562,7 @@ func (a *app) remoteStatus(c *ui.Context, text func(string) ui.Element) {
 	default:
 		tip, tint = locales.RemoteDisconnectedTip(host), p.danger
 	}
-	b := ui.ButtonBase(c.Key("status:ssh")).Height(statusBarH-6).Padding(0, 7).Gap(5).Radius(4).
+	b := ui.ButtonBase(c.Key("status:ssh")).Height(statusItemH()).Padding(0, 7).Gap(5).Radius(4).
 		AlignItems(ui.Center).Label(tip).Tooltip(tip)
 	b.Background(tint.Alpha(0.16))
 	if b.Hovered() {

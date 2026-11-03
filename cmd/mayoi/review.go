@@ -1555,7 +1555,7 @@ func (a *app) reviewStatus(c *ui.Context, text func(string) ui.Element) {
 	}
 	p := a.pal
 	tip := a.reviewLabel(locales.ReviewStatusTip(k), locales.ReviewStatusTipItems(k))
-	b := ui.ButtonBase(c.Key("status:review")).Height(statusBarH-6).Padding(0, 6).Gap(5).Radius(4).
+	b := ui.ButtonBase(c.Key("status:review")).Height(statusItemH()).Padding(0, 6).Gap(5).Radius(4).
 		AlignItems(ui.Center).Label(tip).Tooltip(tip)
 	if b.Hovered() {
 		b.Background(p.hover)

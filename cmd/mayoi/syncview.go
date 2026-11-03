@@ -86,7 +86,7 @@ func (a *app) syncStatus(c *ui.Context) {
 	p := a.pal
 	look := a.syncLook(si, time.Now())
 	tip := look.title + " · " + look.subtitle
-	b := ui.ButtonBase(c.Key("status:sync")).Height(statusBarH - 6).Width(syncStatusW - 2).Radius(4).
+	b := ui.ButtonBase(c.Key("status:sync")).Height(statusItemH()).Width(syncStatusW - 2).Radius(4).
 		AlignItems(ui.Center).Justify(ui.Center).Label(locales.SyncPanelLabel(si.name))
 	if !a.syncOpen {
 		b.Tooltip(tip)
@@ -365,7 +365,7 @@ func (a *app) signinView(c *ui.Context) {
 	ui.Overlay(c, func() {
 		back := a.dialogBack(c)
 		back.Children(func() {
-			box := a.floating(c, ui.Column(c).Width(440).MaxWidthPercent(92).Margin(titleBarH+8, 0, 0, 0).Padding(20, 20, 16, 20).Gap(16).Radius(12), true).
+			box := a.floating(c, ui.Column(c).Width(440).MaxWidthPercent(92).Margin(titleH()+8, 0, 0, 0).Padding(20, 20, 16, 20).Gap(16).Radius(12), true).
 				Role(ui.RoleDialog).Label(locales.SyncSignInTitle())
 			box.Children(func() {
 				// What it is.

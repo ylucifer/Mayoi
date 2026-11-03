@@ -67,7 +67,7 @@ func (a *app) transferStatus(c *ui.Context, text func(string) ui.Element) {
 		return
 	}
 	p := a.pal
-	b := ui.ButtonBase(c.Key("status:transfer")).Height(statusBarH-6).Padding(0, 6).Gap(5).Radius(4).
+	b := ui.ButtonBase(c.Key("status:transfer")).Height(statusItemH()).Padding(0, 6).Gap(5).Radius(4).
 		AlignItems(ui.Center).Label(label).Tooltip(locales.TransferClickToCancel(label))
 	if b.Hovered() {
 		b.Background(p.hover)

@@ -351,25 +351,16 @@ func TestStatusBarDropsTheLeastNeededFirst(t *testing.T) {
 }
 
 // TestCommandCenterFitsNarrowWindow: the command center fits the title
-// bar, and leaves out the folder before it cuts the name short.
+// bar. The IDEA search box names itself, not the document as upstream's
+// does, so it is the label that has to be in it.
 func TestCommandCenterFitsNarrowWindow(t *testing.T) {
 	hs := newHarness(t, true)
 	hs.a.openFile(hs.path("main.go"), true)
-	folder := filepath.Base(hs.root)
-	hs.tt.SetSize(760, 400)
-	hs.settle()
-	if _, ok := hs.tt.Find(folder); !ok {
-		t.Error("the command center leaves out the folder though it has room")
-	}
 	hs.tt.SetSize(360, 400)
 	hs.settle()
 	box, ok := hs.tt.Find("Quick Open")
 	if !ok || box.X < 0 || box.X+box.W > 360 {
 		t.Errorf("the command center does not fit the title bar: %v", box)
-	}
-	name, ok := hs.tt.Find("main.go")
-	if !ok || name.X < box.X || name.X+name.W > box.X+box.W {
-		t.Errorf("the name is not in the command center: %v in %v", name, box)
 	}
 }
 
@@ -909,7 +900,7 @@ func TestSidebarOnTheRight(t *testing.T) {
 	hs.settle()
 	hs.shot("sidebar-right")
 	w := a.window.SidebarWidth
-	x := 1200 - w + 2 // the sidebar's left edge
+	x := 1200 - stripeW - w + 2 // the sidebar's left edge, past the stripe
 	tt.Press(x, 300)
 	tt.Move(x-40, 300)
 	tt.Move(x-60, 300)
@@ -936,35 +927,35 @@ func TestTerminalPanelAtASide(t *testing.T) {
 		}
 		return box
 	}
-	// The title bar's buttons: the terminal's follows the panel's side,
-	// past the sidebar's button when the sidebar is on that side too.
-	termBtn, sideBtn := a.withKey("Toggle Terminal", "view.terminal"), a.withKey("Toggle Sidebar", "view.sidebar")
-	buttons := func() (term, side ui.Rect) { return at(termBtn), at(sideBtn) }
+	// The terminal's entry is on the stripe of the side the panel docks
+	// at, at the foot of it.
+	termBtn := a.withKey("Toggle Terminal", "view.terminal")
+	buttons := func() ui.Rect { return at(termBtn) }
 	width := float32(1200)
 	a.openFile(hs.path("main.go"), true)
 	a.run("view.terminal")
 	hs.settle()
 	// At the bottom, the panel is under the editors, right of the sidebar,
-	// and its button is at the right of the bar, the sidebar's at the left.
+	// and its entry is at the foot of the left stripe.
 	if panel, explorer := at("TERMINAL"), at("EXPLORER"); panel.Y < explorer.Y || panel.X < explorer.X {
 		t.Errorf("the panel at the bottom: %v, the sidebar %v", panel, explorer)
 	}
-	if term, side := buttons(); term.X < width/2 || side.X > width/2 {
-		t.Errorf("the buttons at the bottom: the terminal's %v, the sidebar's %v", term, side)
+	if term := buttons(); term.X > stripeW {
+		t.Errorf("the entry at the bottom: the terminal's %v", term)
 	}
-	// On the left, past the sidebar, at the window's own edge, its button
-	// left of the sidebar's.
+	// On the left, past the sidebar, at the window's own edge.
 	a.run("view.panelPosition.left")
 	hs.settle()
-	if panel, explorer := at("TERMINAL"), at("EXPLORER"); panel.X > explorer.X || panel.X > 40 {
+	// The titles sit in their headers' padding, past the stripe.
+	if panel, explorer := at("TERMINAL"), at("EXPLORER"); panel.X > explorer.X || panel.X > stripeW+20 {
 		t.Errorf("the panel on the left: %v, the sidebar %v", panel, explorer)
 	}
-	if term, side := buttons(); term.X > side.X {
-		t.Errorf("the buttons with the panel on the left: the terminal's %v, the sidebar's %v", term, side)
+	if term := buttons(); term.X > stripeW {
+		t.Errorf("the entry with the panel on the left: the terminal's %v", term)
 	}
 	// Its splitter is on its right, and dragging it right widens it.
 	size := a.window.PanelWidth
-	edge := size - 2
+	edge := stripeW + size - 2
 	tt.Press(edge, 300)
 	tt.Move(edge+40, 300)
 	tt.Move(edge+60, 300)
@@ -974,35 +965,38 @@ func TestTerminalPanelAtASide(t *testing.T) {
 		t.Errorf("the panel %v after dragging 60 from %v", got, size)
 	}
 	// With the sidebar on the right, the panel on the left keeps the left
-	// of the bar, and its button with it.
+	// of the window, and its entry with it.
 	a.run("view.sidebarRight")
 	hs.settle()
-	if term, side := buttons(); term.X > width/2 || side.X < width/2 {
-		t.Errorf("the buttons with the panel left, the sidebar right: the terminal's %v, the sidebar's %v", term, side)
+	if term := buttons(); term.X > width/2 {
+		t.Errorf("the entry with the panel left, the sidebar right: the terminal's %v", term)
 	}
 	// The panel on the right, with the sidebar there too, is still the
-	// outer one, at the window's own edge, and its button is at the right.
+	// outer one, past the stripe at the window's own edge, and its entry
+	// is at the foot of the right stripe.
 	a.run("view.panelPosition.right")
 	hs.settle()
 	panel, explorer := at("TERMINAL"), at("EXPLORER")
-	if panel.X < explorer.X || panel.X < width-a.window.PanelWidth || panel.X > width-a.window.PanelWidth+40 {
+	if panel.X < explorer.X || panel.X < width-stripeW-a.window.PanelWidth || panel.X > width-stripeW-a.window.PanelWidth+40 {
 		t.Errorf("the panel on the right: %v, the sidebar %v, width %v", panel, explorer, a.window.PanelWidth)
 	}
-	if term, _ := buttons(); term.X < width/2 {
-		t.Errorf("the terminal's button with the panel on the right: %v", term)
+	if term := buttons(); term.X < width/2 {
+		t.Errorf("the terminal's entry with the panel on the right: %v", term)
 	}
 	// In a narrow window it gives way, so the editors keep 320 points
-	// beside the sidebar, and takes its width back as the window widens.
+	// beside the sidebar and the stripes, and takes its width back as the
+	// window widens. The window is wide enough that the panel's least is
+	// not what bounds it.
 	a.run("view.sidebarRight")
 	a.run("view.panelPosition.left")
-	hs.tt.SetSize(760, 800)
+	hs.tt.SetSize(900, 800)
 	hs.settle()
-	if hide := at("Hide Panel"); hide.X+hide.W > 760-320-a.window.SidebarWidth {
-		t.Errorf("the panel in a narrow window reaches %v, past %v", hide.X+hide.W, 760-320-a.window.SidebarWidth)
+	if hide := at("Hide Panel"); hide.X+hide.W > 900-320-stripeW-a.window.SidebarWidth {
+		t.Errorf("the panel in a narrow window reaches %v, past %v", hide.X+hide.W, 900-320-stripeW-a.window.SidebarWidth)
 	}
 	hs.tt.SetSize(int(width), 800)
 	hs.settle()
-	if hide := at("Hide Panel"); hide.X+hide.W < a.window.PanelWidth-40 {
+	if hide := at("Hide Panel"); hide.X+hide.W < a.window.PanelWidth {
 		t.Errorf("the panel widened back to %v, not %v", hide.X+hide.W, a.window.PanelWidth)
 	}
 	// Hidden, moving it shows it again.
@@ -1041,10 +1035,10 @@ func TestMaximizedPanelFillsTheWindow(t *testing.T) {
 			t.Fatalf("the panel maximized at the %s is not shown", pos)
 		}
 		// The sidebar is on the left, between a panel there and the
-		// editors' room.
-		left, right := a.window.SidebarWidth, width
+		// editors' room, and the stripes hold the window's edges.
+		left, right := stripeW+a.window.SidebarWidth, width-stripeW
 		if pos == "left" {
-			left, right = 0, width-a.window.SidebarWidth
+			left, right = stripeW, width-stripeW-a.window.SidebarWidth
 		}
 		if title.X < left || title.X > left+40 || hide.X+hide.W < right-40 || hide.X+hide.W > right {
 			t.Errorf("the panel maximized at the %s: its title %v, its last button %v", pos, title, hide)

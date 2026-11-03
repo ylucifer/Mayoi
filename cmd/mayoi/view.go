@@ -40,6 +40,12 @@ const (
 // view builds the window: a title bar, the explorer beside the editor
 // and the terminal panel below it, and a status bar.
 func (a *app) view(c *ui.Context) {
+	if ideaLayout {
+		// The IDEA new UI's layout lives in idea_view.go, ours alone;
+		// upstream's body below stays as it is.
+		a.ideaView(c)
+		return
+	}
 	// The window's, which may be another than the frame before's as the
 	// project moves to another window.
 	a.setServices(c.Services())
@@ -224,7 +230,7 @@ func (a *app) main(c *ui.Context) {
 		return
 	}
 	_, h := c.Size()
-	room := h - titleBarH - statusBarH
+	room := h - titleH() - statusH()
 	height := clamp(w.PanelHeight, 80, max(room-80, 80))
 	box := ui.Column(c.Key("panel")).Shrink(0).BorderWidth(1, 0, 0, 0).BorderColor(p.border)
 	if a.panelMax {
@@ -274,6 +280,9 @@ func (a *app) sidePanel(c *ui.Context, right bool) {
 	if a.rail != nil {
 		room -= railW
 	}
+	// The stripes hold the window's edges, and the panel gives way to
+	// them as it does to the sidebar and the rail.
+	room -= 2 * stripeW
 	room = max(room, minPanelW)
 	size := clamp(w.PanelWidth, minPanelW, room)
 	if a.panelMax {
@@ -366,6 +375,12 @@ func (a *app) splitter(c *ui.Context, at edge, drag func(d float32)) ui.Element 
 }
 
 func (a *app) titleBar(c *ui.Context) {
+	if ideaLayout {
+		// The main toolbar lives in idea_view.go, ours alone; upstream's
+		// body below stays as it is.
+		a.ideaTitleBar(c)
+		return
+	}
 	p := a.pal
 	bar := c.TitleBar()
 	rightPad := bar.Right + 8
@@ -429,6 +444,12 @@ func (a *app) titleBar(c *ui.Context) {
 // commandCenter is the box in the middle of the title bar: it names the
 // document and the folder, and opens quick open.
 func (a *app) commandCenter(c *ui.Context) {
+	if ideaLayout {
+		// The search box lives in idea_view.go, ours alone; upstream's
+		// body below stays as it is.
+		a.ideaCommandCenter(c)
+		return
+	}
 	p := a.pal
 	b := ui.ButtonBase(c.Key("command-center")).Height(24).FillWidth().Padding(0, 10).Gap(8).
 		Radius(6).Justify(ui.Center).AlignItems(ui.Center).Border(1, p.border).Label(locales.QuickOpenLabel()).Tooltip(a.withKey(locales.QuickOpenLabel(), "go.quickOpen"))
@@ -994,8 +1015,8 @@ type statusVisibility struct {
 // parts stay as the caret moves.
 func (a *app) statusFit(c *ui.Context, width float32) statusVisibility {
 	measure := func(s string, icon bool) float32 {
-		w, _ := c.MeasureText(0, ui.Span{Text: s, Size: 11.5})
-		w += 2*6 + 2 // the item's padding, and the gap after it
+		w, _ := c.MeasureText(0, ui.Span{Text: s, Size: statusTextSize()})
+		w += 2*6 + statusGap() // the item's padding, and the gap after it
 		if icon {
 			w += 12 + 5
 		}
@@ -1135,7 +1156,7 @@ func (a *gitContext) gitSyncStatus(c *ui.Context, showCounts bool) {
 	if g.busy != "" {
 		tip = g.busy
 	}
-	b := ui.ButtonBase(c.Key("status:git-sync")).Height(statusBarH-6).Padding(0, 6).Gap(5).Radius(4).
+	b := ui.ButtonBase(c.Key("status:git-sync")).Height(statusItemH()).Padding(0, 6).Gap(5).Radius(4).
 		AlignItems(ui.Center).Label(label).Tooltip(tip).Disabled(g.busy != "")
 	if b.Hovered() {
 		b.Background(p.hover)
@@ -1144,7 +1165,7 @@ func (a *gitContext) gitSyncStatus(c *ui.Context, showCounts bool) {
 	b.Children(func() {
 		ui.Icon(c, icon).FontSize(12).TextColor(p.statusFg)
 		if counts := a.gitSyncLabel(); showCounts && counts != "" {
-			ui.Text(c, counts).FontSize(11.5).TextColor(p.statusFg).SingleLine()
+			ui.Text(c, counts).FontSize(statusTextSize()).TextColor(p.statusFg).SingleLine()
 		}
 	})
 	if b.Clicked() {
@@ -1164,7 +1185,7 @@ func (a *app) vimBadge(c *ui.Context, v *vimState, text func(string) ui.Element)
 	case v.mode.visual():
 		bg, fg = p.modified.Alpha(0.22), p.modifiedFg
 	}
-	row := ui.Row(c.Key("status:vim")).Height(statusBarH).Padding(0, 6).Gap(6).AlignItems(ui.Center)
+	row := ui.Row(c.Key("status:vim")).Height(statusH()).Padding(0, 6).Gap(6).AlignItems(ui.Center)
 	row.Children(func() {
 		ui.Text(c, v.mode.String()).FontSize(10.5).FontWeight(650).LetterSpacing(0.6).TextColor(fg).SingleLine().
 			Padding(1, 6).Radius(4).Background(bg)
@@ -1174,7 +1195,7 @@ func (a *app) vimBadge(c *ui.Context, v *vimState, text func(string) ui.Element)
 				Transition(ui.ElementTransition{Duration: 160 * time.Millisecond, Enter: &ui.Motion{Scale: 0.8}, Exit: &ui.Motion{Scale: 0.8}}).
 				Children(func() {
 					ui.Box(c).Width(6).Height(6).Radius(3).Background(p.dangerFg)
-					ui.Text(c, locales.VimRecording(string(a.vimRec))).FontSize(11.5).TextColor(p.dangerFg).SingleLine()
+					ui.Text(c, locales.VimRecording(string(a.vimRec))).FontSize(statusTextSize()).TextColor(p.dangerFg).SingleLine()
 				})
 		}
 		if k := v.pending(); k != "" {
@@ -1187,7 +1208,7 @@ func (a *app) vimBadge(c *ui.Context, v *vimState, text func(string) ui.Element)
 			if m.err {
 				col = p.dangerFg
 			}
-			ui.Text(c.Key("status:vim-msg"), m.text).FontSize(11.5).TextColor(col).SingleLine().MaxWidth(420).
+			ui.Text(c.Key("status:vim-msg"), m.text).FontSize(statusTextSize()).TextColor(col).SingleLine().MaxWidth(420).
 				Transition(ui.ElementTransition{Duration: 180 * time.Millisecond, Colors: true, Enter: &ui.Motion{}, Exit: &ui.Motion{}}).
 				ContentTransition(ui.ContentTransition{})
 		}
@@ -1199,17 +1220,17 @@ func (a *app) statusBar(c *ui.Context) {
 	repo := a.repository()
 	width, _ := c.Size()
 	visible := a.statusFit(c, width)
-	bar := ui.Row(c).Height(statusBarH).Padding(0, 6).Gap(2).AlignItems(ui.Center).Background(p.status).
+	bar := ui.Row(c).Height(statusH()).Padding(0, statusPad()).Gap(statusGap()).AlignItems(ui.Center).Background(p.status).
 		BorderWidth(1, 0, 0, 0).BorderColor(p.hairline())
 	a.grained(bar)
 	bar.Children(func() {
 		text := func(s string) ui.Element {
-			return ui.Text(c, s).FontSize(11.5).TextColor(p.statusFg).SingleLine()
+			return ui.Text(c, s).FontSize(statusTextSize()).TextColor(p.statusFg).SingleLine()
 		}
 		// item is a part of the bar, a button when it does something.
 		item := func(key, label, tip string, icon *ui.SVG, fn func()) {
 			if fn == nil {
-				ui.Row(c.Key("status:"+key)).Height(statusBarH).Padding(0, 6).Gap(5).AlignItems(ui.Center).Children(func() {
+				ui.Row(c.Key("status:"+key)).Height(statusH()).Padding(0, 6).Gap(5).AlignItems(ui.Center).Children(func() {
 					if icon != nil {
 						ui.Icon(c, icon).FontSize(12).TextColor(p.statusFg)
 					}
@@ -1217,7 +1238,7 @@ func (a *app) statusBar(c *ui.Context) {
 				})
 				return
 			}
-			b := ui.ButtonBase(c.Key("status:"+key)).Height(statusBarH-6).Padding(0, 6).Gap(5).Radius(4).
+			b := ui.ButtonBase(c.Key("status:"+key)).Height(statusItemH()).Padding(0, 6).Gap(5).Radius(4).
 				AlignItems(ui.Center).Label(tip).Tooltip(tip)
 			if b.Hovered() {
 				b.Background(p.hover)
@@ -1238,7 +1259,7 @@ func (a *app) statusBar(c *ui.Context) {
 			if !show {
 				return
 			}
-			b := ui.ButtonBase(c.Key("status:"+key)).Height(statusBarH-6).Padding(0, 6).Radius(4).
+			b := ui.ButtonBase(c.Key("status:"+key)).Height(statusItemH()).Padding(0, 6).Radius(4).
 				AlignItems(ui.Center).Label(tip).Tooltip(tip)
 			if b.Hovered() {
 				b.Background(p.hover)
@@ -1257,7 +1278,7 @@ func (a *app) statusBar(c *ui.Context) {
 		a.remoteStatus(c, text)
 		a.portsStatus(c, text)
 		if b := repo.branch(); b != "" {
-			bb := ui.ButtonBase(c.Key("status:branch")).Height(statusBarH-6).Padding(0, 6).Gap(5).Radius(4).
+			bb := ui.ButtonBase(c.Key("status:branch")).Height(statusItemH()).Padding(0, 6).Gap(5).Radius(4).
 				AlignItems(ui.Center).Label(locales.BranchLabel(b)).Tooltip(locales.BranchStatusTip(b)).Disabled(repo.git.busy != "")
 			if bb.Hovered() {
 				bb.Background(p.hover)
@@ -1278,7 +1299,7 @@ func (a *app) statusBar(c *ui.Context) {
 		repo.gitSyncStatus(c, visible.gitSyncCounts)
 		a.transferStatus(c, text)
 		if busy := hcBusy(); busy != "" {
-			ui.Row(c.Key("status:hc")).Height(statusBarH).Padding(0, 6).Gap(5).AlignItems(ui.Center).Transition(revealFade).Children(func() {
+			ui.Row(c.Key("status:hc")).Height(statusH()).Padding(0, 6).Gap(5).AlignItems(ui.Center).Transition(revealFade).Children(func() {
 				ui.Spinner(c).Size(11, 11)
 				text(busy)
 			})
@@ -1286,7 +1307,7 @@ func (a *app) statusBar(c *ui.Context) {
 		if busy := repo.git.busy; busy != "" && a.settings.Theme == themeClaude {
 			a.claudeSpinner(c, busy)
 		} else if busy != "" {
-			ui.Row(c.Key("status:busy")).Height(statusBarH).Padding(0, 6).Gap(5).AlignItems(ui.Center).Children(func() {
+			ui.Row(c.Key("status:busy")).Height(statusH()).Padding(0, 6).Gap(5).AlignItems(ui.Center).Children(func() {
 				// In a theme with a character, it hops for it instead.
 				if a.themeMascot() == nil {
 					ui.Spinner(c).Size(11, 11)

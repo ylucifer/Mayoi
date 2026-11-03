@@ -89,7 +89,7 @@ func (a *app) diagramOverlayView(c *ui.Context) {
 	ui.Overlay(c, func() {
 		back := a.dialogBack(c)
 		back.Children(func() {
-			box := a.floating(c, ui.Column(c).Grow(1).AlignSelf(ui.Stretch).Margin(titleBarH+8, 24, 24, 24).Radius(10).Clip(), true).
+			box := a.floating(c, ui.Column(c).Grow(1).AlignSelf(ui.Stretch).Margin(titleH()+8, 24, 24, 24).Radius(10).Clip(), true).
 				Role(ui.RoleDialog).Label(b.language)
 			box.Children(func() {
 				ui.Row(c).AlignItems(ui.Center).Gap(2).Padding(6, 8, 6, 12).Border(1, p.border).BorderWidth(0, 0, 1, 0).Children(func() {

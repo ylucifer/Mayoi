@@ -227,7 +227,7 @@ func (a *app) statusMascot(c *ui.Context, m *mascot) {
 	w, h := m.size(cell)
 	still := a.mascotStill(c)
 	bg := a.pal.status
-	ui.Row(c.Key("status:mascot")).Size(w+12, statusBarH).Tooltip(a.mascotTip(m)).Draw(func(pt *ui.Painter, r ui.Rect) {
+	ui.Row(c.Key("status:mascot")).Size(w+12, statusH()).Tooltip(a.mascotTip(m)).Draw(func(pt *ui.Painter, r ui.Rect) {
 		a.drawMascot(pt, m, ui.Rect{X: r.X + 6, Y: r.Y + (r.H-h)/2, W: w, H: h}, cell, bg, still, true)
 	})
 }

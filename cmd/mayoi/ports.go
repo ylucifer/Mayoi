@@ -116,7 +116,7 @@ func (a *app) portsStatus(c *ui.Context, text func(string) ui.Element) {
 	if len(fs) == 1 {
 		tip = locales.PortIsAt(fs[0].Port, a.conn.Host, fs[0].Local)
 	}
-	b := ui.ButtonBase(c.Key("status:ports")).Height(statusBarH-6).Padding(0, 6).Gap(5).Radius(4).
+	b := ui.ButtonBase(c.Key("status:ports")).Height(statusItemH()).Padding(0, 6).Gap(5).Radius(4).
 		AlignItems(ui.Center).Label(tip).Tooltip(tip)
 	if b.Hovered() {
 		b.Background(p.hover)

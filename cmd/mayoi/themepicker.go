@@ -146,7 +146,7 @@ func (a *app) themePickerView(c *ui.Context) {
 	ui.Overlay(c, func() {
 		back := a.dialogBack(c)
 		back.Children(func() {
-			box := a.floating(c, ui.Column(c).Width(560).MaxWidthPercent(92).Margin(titleBarH+8, 0, 0, 0).Radius(10), true).Clip().
+			box := a.floating(c, ui.Column(c).Width(560).MaxWidthPercent(92).Margin(titleH()+8, 0, 0, 0).Radius(10), true).Clip().
 				Role(ui.RoleDialog).Label(locales.ThemeLabel())
 			box.Children(func() {
 				ui.Row(c).Padding(10, 14).Gap(10).AlignItems(ui.Center).BorderWidth(0, 0, 1, 0).BorderColor(p.border).Children(func() {

@@ -37,7 +37,7 @@ func (a *app) promptView(c *ui.Context) {
 	ui.Overlay(c, func() {
 		back := a.dialogBack(c)
 		back.Children(func() {
-			box := a.floating(c, ui.Column(c).Width(420).MaxWidthPercent(92).Margin(titleBarH+8, 0, 0, 0).Padding(14, 16).Gap(10).Radius(10), true).
+			box := a.floating(c, ui.Column(c).Width(420).MaxWidthPercent(92).Margin(titleH()+8, 0, 0, 0).Padding(14, 16).Gap(10).Radius(10), true).
 				Role(ui.RoleDialog).Label(pr.title)
 			box.Children(func() {
 				ui.Row(c).Gap(8).AlignItems(ui.Center).Children(func() {
@@ -124,7 +124,7 @@ func (a *app) confirmView(c *ui.Context) {
 	ui.Overlay(c, func() {
 		back := a.dialogBack(c)
 		back.Children(func() {
-			box := a.floating(c, ui.Column(c).Width(width).MaxWidthPercent(92).Margin(titleBarH+8, 0, 0, 0).Padding(14, 16).Gap(10).Radius(10), true).
+			box := a.floating(c, ui.Column(c).Width(width).MaxWidthPercent(92).Margin(titleH()+8, 0, 0, 0).Padding(14, 16).Gap(10).Radius(10), true).
 				Role(ui.RoleDialog).Label(cf.title)
 			box.Children(func() {
 				ui.Text(c, cf.title).FontSize(13).FontWeight(600).TextColor(p.text)

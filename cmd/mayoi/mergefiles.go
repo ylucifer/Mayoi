@@ -241,7 +241,7 @@ func (a *app) conflictsView(c *ui.Context) {
 	ui.Overlay(c, func() {
 		back := a.dialogBack(c)
 		back.Children(func() {
-			box := a.floating(c, ui.Column(c).Width(520).MaxWidthPercent(92).Margin(titleBarH+8, 0, 0, 0).Radius(10), true).Clip().
+			box := a.floating(c, ui.Column(c).Width(520).MaxWidthPercent(92).Margin(titleH()+8, 0, 0, 0).Radius(10), true).Clip().
 				Role(ui.RoleDialog).Label(locales.MergeFilesTitle())
 			box.Children(func() {
 				resolved, total := a.mergeResolvedCount()

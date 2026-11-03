@@ -76,7 +76,7 @@ func (a *app) claudeSpinner(c *ui.Context, busy string) {
 	gap := advance(" ")
 	glyphW, secsW := advance("✻"), advance("(999s)")
 	still := a.mascotStill(c)
-	ui.Row(c.Key("status:busy")).Size(glyphW+words+secsW+3*gap+12, statusBarH).Tooltip(busy).Draw(func(pt *ui.Painter, r ui.Rect) {
+	ui.Row(c.Key("status:busy")).Size(glyphW+words+secsW+3*gap+12, statusH()).Tooltip(busy).Draw(func(pt *ui.Painter, r ui.Rect) {
 		in := pt.Now().Sub(s.since)
 		glyph, word, light := spinAt(in, busy)
 		if still {

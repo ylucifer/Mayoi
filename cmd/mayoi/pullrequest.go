@@ -174,9 +174,9 @@ func (a *gitContext) prBadge(c *ui.Context, inStatus, short bool) *ui.Element {
 		return nil
 	}
 	p := a.app.pal
-	fg, size, key, h := p.muted, float32(11.5), "scm-pr", float32(22)
+	fg, size, key, h := p.muted, statusTextSize(), "scm-pr", float32(22)
 	if inStatus {
-		fg, key, h = p.statusFg, "status:pr", statusBarH-6
+		fg, key, h = p.statusFg, "status:pr", statusItemH()
 	}
 	icon, col := prChecksIcon(p, pr.Checks)
 	if inStatus {

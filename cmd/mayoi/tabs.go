@@ -51,20 +51,20 @@ func (a *app) tabStrip(c *ui.Context, col *column) {
 			})
 		}
 	}
-	ui.Row(c).Height(tabStripH).Background(p.strip).AlignItems(ui.Center).
+	ui.Row(c).Height(tabH()).Background(p.strip).AlignItems(ui.Center).
 		ContextMenu(func(m *ui.Menu) { a.columnLockMenu(m, col) }).Children(func() {
 		// The strip's edge along the bottom, which the tab shown breaks to
 		// join the text below it.
 		ui.Box(c).Absolute().Left(0).Right(0).Bottom(0).Height(1).Background(p.border)
 		strip := ui.ScrollHorizontal(c.Key("tabs")).TrackScroll(&col.tabScroll).
-			Grow(1).Height(tabStripH).ScrollbarInsets(0, 0, 0, 0)
+			Grow(1).Height(tabH()).ScrollbarInsets(0, 0, 0, 0)
 		strip = strip.HandleInput(func(ev ui.InputEvent) bool { return a.tabWheel(col, ev) })
 		// Past the last tab: there.
 		drop(strip, nil)
 		_, atEnd := ui.DragOver[dragItem](strip)
 		atEnd = atEnd || strip.FileDragOver()
 		strip.Children(func() {
-			ui.Row(c).Height(tabStripH).AlignItems(ui.Stretch).Children(func() {
+			ui.Row(c).Height(tabH()).AlignItems(ui.Stretch).Children(func() {
 				for i, t := range col.tabs {
 					active := i == col.active
 					tip := locales.TabTerminal()

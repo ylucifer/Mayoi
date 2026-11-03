@@ -29,44 +29,52 @@ func (a *app) sidebar(c *ui.Context) {
 	}
 	scm, search := view == "git", view == "search"
 	sb.Children(func() {
-		ui.Row(c).Height(34).Padding(0, 6, 0, 8).Gap(2).AlignItems(ui.Center).Children(func() {
-			if a.root != "" {
-				a.sidebarSwitch(c, iconFiles, a.withKey(locales.SidebarExplorer(), "view.explorer"), !scm && !search, 0, a.showExplorer)
-				a.sidebarSwitch(c, iconSearch, a.withKey(locales.SidebarSearch(), "edit.findInFiles"), search, 0, func() { a.showSearch(false) })
-				a.sidebarSwitch(c, iconBranch, a.withKey(locales.SidebarScm(), "view.scm"), scm, a.changeCount(), a.showSourceControl)
-			}
-			title, short, actions := locales.SidebarTitleExplorer(), "", 0
-			switch {
-			case scm:
-				title, short = locales.SidebarTitleScm(), locales.SidebarTitleScmShort()
-				if a.repository().git.repo != nil {
-					actions = 1
+		if ideaLayout {
+			// The tool window's header, as IDEA's is: its title at the
+			// left and its actions at the right; the views it may show
+			// are the stripe's buttons at the window's edge. The header
+			// lives in idea_view.go, ours alone.
+			a.ideaSidebarHeader(c, scm, search, hovered)
+		} else {
+			ui.Row(c).Height(34).Padding(0, 6, 0, 8).Gap(2).AlignItems(ui.Center).Children(func() {
+				if a.root != "" {
+					a.sidebarSwitch(c, iconFiles, a.withKey(locales.SidebarExplorer(), "view.explorer"), !scm && !search, 0, a.showExplorer)
+					a.sidebarSwitch(c, iconSearch, a.withKey(locales.SidebarSearch(), "edit.findInFiles"), search, 0, func() { a.showSearch(false) })
+					a.sidebarSwitch(c, iconBranch, a.withKey(locales.SidebarScm(), "view.scm"), scm, a.changeCount(), a.showSourceControl)
 				}
-			case search:
-				title = locales.SidebarTitleSearch()
-				if hovered {
-					actions = 3
+				title, short, actions := locales.SidebarTitleExplorer(), "", 0
+				switch {
+				case scm:
+					title, short = locales.SidebarTitleScm(), locales.SidebarTitleScmShort()
+					if a.repository().git.repo != nil {
+						actions = 1
+					}
+				case search:
+					title = locales.SidebarTitleSearch()
+					if hovered {
+						actions = 3
+					}
 				}
-			}
-			// The switches, the gaps, the paddings and the actions' buttons
-			// take the rest of the row.
-			room := a.window.SidebarWidth - 1 - 14 - 6 - float32(actions)*28
-			if a.root != "" {
-				room -= 3*26 + 2*3
-			}
-			size, spacing := p.titleLook(11, titleSpacing)
-			title = fitTitle(c, p.title(title), p.title(short), room, size, spacing)
-			ui.Text(c, title).FontSize(size).FontWeight(600).LetterSpacing(spacing).TextColor(p.muted).Grow(1).
-				Padding(0, 0, 0, 6).SingleLine()
-			if scm {
-				a.scmTitleActions(c)
-				return
-			}
-			if search {
-				a.searchTitleActions(c, hovered)
-				return
-			}
-		})
+				// The switches, the gaps, the paddings and the actions' buttons
+				// take the rest of the row.
+				room := a.window.SidebarWidth - 1 - 14 - 6 - float32(actions)*28
+				if a.root != "" {
+					room -= 3*26 + 2*3
+				}
+				size, spacing := p.titleLook(11, titleSpacing)
+				title = fitTitle(c, p.title(title), p.title(short), room, size, spacing)
+				ui.Text(c, title).FontSize(size).FontWeight(600).LetterSpacing(spacing).TextColor(p.muted).Grow(1).
+					Padding(0, 0, 0, 6).SingleLine()
+				if scm {
+					a.scmTitleActions(c)
+					return
+				}
+				if search {
+					a.searchTitleActions(c, hovered)
+					return
+				}
+			})
+		}
 		ui.Column(c.Key("view:" + view)).Grow(1).MinHeight(0).Children(func() {
 			if a.root == "" {
 				a.noFolder(c)
